@@ -25,22 +25,15 @@ use config;
 class PersonalController extends Controller
 {
 
-   public function test($request){
-   return $acceptHeader = $request->header('Authorization');
-
-    // $check_token=DB::table('personal_infos')->where('auth_access_token',$acceptHeader)->first();
+   public function loginUser(Request $request){
+      $acceptHeader = $request->header('Authorization');
+      $user=DB::table('personal_infos')->where('auth_access_token',$acceptHeader)->first();
+      return $user->id; 
    }
 
-
-
     public function MergeApi(Request $request){
-
-
-        $id=$this->test();
-        dd($id);
-
+        $login_id=$this->loginUser($request);
         //App Settings Start
-
         $delivery_configurations = DB::table('delivery_configurations')->get();
         $settings = DB::table('settings')->first();
         foreach($delivery_configurations as $delivery_configuration){
@@ -87,7 +80,7 @@ class PersonalController extends Controller
         //App settings End
 
         //Start Coupon
-        $user_id = auth()->user()['id'];
+        $user_id = $login_id;
         $coupons = DB::table('coupons')->where('user_id' , null)->get();
         //End coupon
 
@@ -96,11 +89,8 @@ class PersonalController extends Controller
         $latitude =  $request->latitude;
 
         $point1 = [$longitude,$latitude];
-        $prefered_area_range = DB::table('prefered_area_range')->get();
-
-
+        $prefered_area_range = DB::table('prefered_area_ranges')->get();
           foreach($prefered_area_range as $prefered_area_ranges){
-
               $to_polygon_array = $prefered_area_ranges->range;
 
               $to_polygon = [];
@@ -115,7 +105,7 @@ class PersonalController extends Controller
           }
         //   return $id;
           if(@$area_name != null){
-            $driver_area = DB::table('driver_update_area')->join('logistics_addional_infos', 'driver_update_area.user_id', '=', 'logistics_addional_infos.user_id')
+            $driver_area = DB::table('driver_update_areas')->join('driver_infos', 'driver_update_areas.driver_id', '=', 'driver_infos.id')
                                                         ->where('area_id', $id)->get();
             if(!$driver_area->isEmpty()){
                 foreach($driver_area as $item){
@@ -128,14 +118,10 @@ class PersonalController extends Controller
             }else{
                 $driver_information = [];
             }
-
-
         }else{
             $driver_information = [];
         }
-
         //Get Driver Location End
-
         //Start Token
         $personal_check = DB::table('logistics_addional_infos')->where('user_id',auth()->user()['id'])->first();
         if($personal_check == null){
@@ -153,39 +139,28 @@ class PersonalController extends Controller
                 'coupon_image'=> $image,
                 'company_info' => $settings,
                 'Drivers'   => $driver_information,
-
-
         ];
-
     }
-
 
     public function orderlist(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'from' => 'required|string',
             'to' => 'required|string',
         ]);
-
         if ($validator->fails())
         {
             return response(['errors'=>$validator->errors()->all()], 200);
         }
-
-
     	$order = DB::table("orders")
     	            ->where('orders.user_id',auth()->user()['id'])
     	            ->get();
-
-
     	if(count($order) > 0){
     	    return [
                     'status' => 200,
                     'success' => true,
                     'msg' => 'Order found',
                     'data'=> $order
-
             ];
     	}else{
     	    return [
@@ -196,11 +171,7 @@ class PersonalController extends Controller
 
             ];
     	}
-
-
-
     }
-
 
 
     //check coupon
