@@ -51,6 +51,10 @@ return [
             'driver' => 'session',
             'provider' => 'personal_infos',
         ],
+        'driver' => [
+            'driver' => 'session',
+            'provider' => 'driver_infos',
+        ],
     ],
 
     /*
@@ -79,6 +83,10 @@ return [
         'personal_infos' => [
             'driver' => 'eloquent',
             'model' => App\Personal::class,
+        ],
+        'driver_infos' => [
+            'driver' => 'eloquent',
+            'model' => App\Driver::class,
         ],
 
         // 'users' => [

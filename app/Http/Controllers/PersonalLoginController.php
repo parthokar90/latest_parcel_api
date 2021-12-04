@@ -82,9 +82,9 @@ class PersonalLoginController extends Controller
                 'phone' => $request->phone,
                 'password' => '123456789'
             ];
-    
+
     	    try {
-               if (auth()->guard('personal')->attempt($credentials)) {         
+               if (auth()->guard('personal')->attempt($credentials)) {
                  $token = auth()->guard('personal')->user()->createToken('TrutsForWeb')->accessToken;
                     $this->getLogs($token);
     	                $users = Personal::
@@ -216,14 +216,14 @@ class PersonalLoginController extends Controller
         try {
 
 
-            if (auth()->guard('personal')->attempt($credentials)) { 
+            if (auth()->guard('personal')->attempt($credentials)) {
                 $token = auth()->guard('personal')->user()->createToken('TrutsForWeb')->accessToken;
                 $this->getLogs($token);
                 $users = DB::table("personal_infos")
                                     ->select('id','username','phone','client_id','email','image')
                                     ->where('phone',$request->phone)
                                     ->first();
-                
+
 
 
                 return [
