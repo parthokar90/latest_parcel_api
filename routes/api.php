@@ -6,27 +6,29 @@ use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\PersonalLoginController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\DriverLoginController;
+use App\Http\Controllers\PublicController;
 
 
 
-
+//public api route
+Route::post('send-otp-message', [PublicController::class,'SendOTPMessage']);
 
 Route::get('test-fireabse', [PassportController::class,'testFireabse']);
 Route::get('driver-lat-long/{userid}/{lat}/{long}', [PassportController::class,'driverLog']);
-Route::post('driver-phone-number-check', [DriverLoginController::class,'driverphoneNumberCheck']);
-Route::post('personal-phone-number-check', [PersonalLoginController::class,'personalphoneNumberCheck']);
 Route::post('delivery-login', [PassportController::class,'deliverylogin']);
-Route::post('register-personal', [PersonalLoginController::class,'registerPersonal']);
-Route::post('register-delivery', [DriverLoginController::class,'registerdelivery']);
 Route::get('app-settings', [PassportController::class,'appSettings']);
-Route::post('send-otp-message', [PassportController::class,'SendOTPMessage']);
 Route::post('set-parcel-service',[PassportController::class,'setParcelService']);
 Route::get('last-orders', [PassportController::class,'lastFiveminutesOrder']);
 
+// driver login and register api route
+Route::post('register-delivery', [DriverLoginController::class,'registerdelivery']);
+Route::post('driver-phone-number-check', [DriverLoginController::class,'driverphoneNumberCheck']);
 
+// personal login and register api route
+Route::post('register-personal', [PersonalLoginController::class,'registerPersonal']);
+Route::post('personal-phone-number-check', [PersonalLoginController::class,'personalphoneNumberCheck']);
 
-
-// personal route
+// personal auth api route
 Route::group(['prefix' => 'personal', 'middleware' => 'personal'], function(){
 
     Route::post('orderlist', [PersonalController::class,'orderlistPersonal']);
@@ -61,37 +63,39 @@ Route::group(['prefix' => 'personal', 'middleware' => 'personal'], function(){
 
 });
 
-
-
+// driver auth api route
 Route::group(['prefix' => 'delivery', 'middleware' => 'driver'], function(){
 
-    Route::get('area', [PassportController::class,'area']);
-    Route::post('orderlist', [PassportController::class,'rangeorderlist']);
-    Route::post('prefered-order-list', [PassportController::class,'preferedorderlist']);
-    Route::get('orderlist/{id}', [PassportController::class,'deliveryorderDetails']);
-    Route::post('order-logistics-assign', [PassportController::class,'orderLogisticsAssign']);
-    Route::post('delivery-confirm-orderlist', [PassportController::class,'deliveryconfirmorderlist']);
-    Route::post('delivery-current-orderlist', [PassportController::class,'deliverycurrentorderlist']);
-    Route::get('profile', [PassportController::class,'deliveryprofile']);
-    Route::post('prefered-area-list',[PassportController::class,'preferedAreaList']);
+    Route::post('configuration-update', [DriverController::class,'configUpdate']);
+    Route::get('area', [DriverController::class,'allArea']);
     Route::post('prefered-area-list-add',[DriverController::class,'preferedAreaListAdd']);
-    Route::post('prefered-area-list-view',[PassportController::class,'preferedAreaListView']);
-    Route::post('prefered-area-list-delete',[PassportController::class,'preferedAreaListDelete']);
-    Route::post('prefered-area-order-list',[PassportController::class,'preferedAreaOrderList']);
-    Route::post('search-order-list',[PassportController::class,'preferedAreaSearchOrderList']);
-    Route::post('single-search-order-list',[PassportController::class,'preferedAreaSingleSearchOrderList']);
-    Route::post('order-history',[PassportController::class,'orderHistory']);
-    Route::post('user-update',[PassportController::class,'deliveryUserUpdate']);
-    Route::post('order-status-change',[PassportController::class,'orderstatuschange']);
-    Route::get('delete-fcm-token', [PassportController::class,'deleteFcmToken']);
+    Route::post('prefered-area-list-view',[DriverController::class,'preferedAreaListView']);
+    Route::post('prefered-area-list-delete',[DriverController::class,'preferedAreaListDelete']);
+    Route::post('all-order-list',[DriverController::class,'preferedAreaOrderList']);
+    Route::post('search-order-list',[DriverController::class,'preferedAreaSearchOrderList']);
+    Route::post('single-search-order-list',[DriverController::class,'preferedAreaSingleSearchOrderList']);
+    Route::post('delivery-current-orderlist', [DriverController::class,'deliverycurrentorderlist']);
+    Route::get('company-wise-order',[DriverController::class,'CompanyWiseOrder']);
+    Route::post('order-status-change',[DriverController::class,'orderstatuschange']);
+    Route::post('order-history',[DriverController::class,'orderHistory']);
+    Route::post('user-update',[DriverController::class,'deliveryUserUpdate']);
+    Route::get('profile',[DriverController::class,'driverProfile']);
+    Route::get('delete-fcm-token', [DriverController::class,'deleteFcmToken']);
 
-    Route::post('configuration-update', [PassportController::class,'configUpdate']);
-    Route::get('wallet', [PassportController::class,'wallet']);
-    Route::get('get-average-rating', [PassportController::class,'getAvgRating']);
-    Route::post('all-order-list',[PassportController::class,'preferedAreaOrderList']);
-    Route::get('company-wise-order',[PassportController::class,'CompanyWiseOrder']);
-    Route::get('profile',[PassportController::class,'driverProfile']);
-    Route::post('pending-order-list',[PassportController::class,'pendingOrderList']);
+    Route::post('orderlist', [DriverController::class,'rangeorderlist']);
+    Route::post('prefered-order-list', [DriverController::class,'preferedorderlist']);
+    Route::get('orderlist/{id}', [DriverControllerD::class,'deliveryorderDetails']);
+    Route::post('order-logistics-assign', [DriverController::class,'orderLogisticsAssign']);
+    Route::post('delivery-confirm-orderlist', [DriverController::class,'deliveryconfirmorderlist']);
+
+    Route::get('profile', [DriverController::class,'deliveryprofile']);
+    Route::post('prefered-area-list',[DriverController::class,'preferedAreaList']);
+
+    Route::post('prefered-area-order-list',[DriverController::class,'preferedAreaOrderList']);
+
+    Route::get('wallet', [DriverController::class,'wallet']);
+    Route::get('get-average-rating', [DriverController::class,'getAvgRating']);
+    Route::post('pending-order-list',[DriverController::class,'pendingOrderList']);
 
 });
 

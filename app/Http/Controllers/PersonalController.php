@@ -25,6 +25,10 @@ use config;
 class PersonalController extends Controller
 {
 
+    //firebase database and password
+    public $firebase_database = 'https://bitoronbd-driver-default-rtdb.asia-southeast1.firebasedatabase.app'; // Masking
+    public $fireabase_pass = 'LV5hhbxc4rzpGvjmej1wHHKlbnADWfRRdm3nESp8'; // Masking
+
     //Auth User ID
     public function loginUser(Request $request){
         $acceptHeader = $request->header('Authorization');
@@ -64,9 +68,34 @@ class PersonalController extends Controller
 
     }
 
+    //push notification send
+    function pushNotificationSend($topic,$category,$title,$description,$url){
+        $serverKey = 'AAAAUs5vGPM:APA91bGsORUPC1pwcQuAfo0jGYRgXirjlWrA3HiORdiTVsUTQDV1ROHR-b3SzdCcFE-6r4IerPxKI259L3BAJ2HsGc_3NQu-VWbkQbqMe6XDvDeZRnlW-2rcu36G9sRuy1PhGF3vonZE';
+
+        $data = ['category'=>$category];
+
+        $notification = ['click_action'=>'.MainActivity','title' =>$title ,'body' => $description,'icon'=>'https://api.parcelmagic.com/nversion/images/home/nlogo.png'];
+
+        $arrayToSend = array('to' => $topic,'priority'=>'high','notification'=>$notification,'data'=>$data);
+
+        $json = json_encode($arrayToSend);
+        $headers = array();
+        $headers[] = 'Content-Type: application/json';
+        $headers[] = 'Authorization: key='. $serverKey;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST,"POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+
+        curl_exec($ch);
+        curl_close($ch);
+    }
+
     // merge API
     public function MergeApi(Request $request){
-        
+
         $login_id=$this->loginUser($request);
         //App Settings Start
         $delivery_configurations = DB::table('delivery_configurations')->get();
@@ -268,6 +297,8 @@ class PersonalController extends Controller
 
         $login_id=$this->loginUser($request);
 
+        // dd($login_id);
+
         $sender_latitude   =  $request->sender_latitude;
         $sender_longitude   =  $request->sender_longitude;
         $receiver_latitude   =  $request->receiver_latitude;
@@ -280,7 +311,6 @@ class PersonalController extends Controller
         $prefered_area_range = DB::table('prefered_area_ranges')->get();
 
         foreach($prefered_area_range as $prefered_area_ranges){
-
             $to_polygon_array = $prefered_area_ranges->range;
 
             $to_polygon = [];
@@ -306,16 +336,16 @@ class PersonalController extends Controller
         $recp_zone = $request->recp_zone;
         $recp_area	 = $request->recp_area;
         $recp_address = $request->recp_address;
-        $pick_phone = strip_tags($request->pic_phone);
-        $pick_name = strip_tags($request->pic_name);
-        $pick_city = $request->pick_city;
-        $pick_zone = $request->pick_zone;
-        $pick_area	 = $request->pick_area_id;
-        $pick_address = $request->pick_address;
+        $sender_phone = strip_tags($request->sender_phone);
+        $sender_name = strip_tags($request->sender_name);
+        $sender_city = $request->sender_city;
+        $sender_zone = $request->sender_zone;
+        $sender_area	 = $request->sender_area_id;
+        $sender_address = $request->sender_address;
         $item_type = $request->item_type;
     	$item_qty = $request->item_qty;
         $item_weight = 1;
-        $item_des	 = $request->item_des;
+        $item_description = $request->item_description;
         $special_instruction = $request->special_instruction;
         $item_price = $request->item_price;
 
@@ -392,7 +422,7 @@ class PersonalController extends Controller
                 $order->delivery_date = date('Y-m-d H:i:s', strtotime($Datebd. ' + 8 hours'));
             }
             $order->invoice_no = $invoice_no;
-            $order->user_id = $user_id;
+            $order->personal_user_id = $user_id;
             $order->order_type = 2;
             $order->current_status = 2;
             $order->order_date = $Datebd;
@@ -412,6 +442,26 @@ class PersonalController extends Controller
             $order->receiver_latitude = $request->receiver_latitude;
             $order->receiver_longitude = $request->receiver_longitude;
             $order->distance = $request->distance;
+
+            $order->recp_name =   $recp_name;
+            $order->recp_phone =   $recp_phone;
+            $order->recp_city =   $recp_city;
+            $order->recp_zone =   $recp_zone;
+            $order->recp_area =   $receiver_area_id;
+            $order->recp_address =   $recp_address;
+            $order->sender_name =   $sender_name;
+            $order->sender_phone =   $sender_phone;
+            $order->sender_city =   $sender_city;
+            $order->sender_area_id =   $sender_area_id;
+            $order->sender_zone =   $sender_zone;
+            $order->sender_address =   $sender_address;
+            $order->item_type =   $item_type;
+            $order->item_weight =   $item_weight;
+            $order->item_description =   $item_description;
+            $order->item_qty =   $item_qty;
+            $order->item_price =   $item_price;
+            $order->special_instruction =  $special_instruction;
+
             $order->save();
             $order_lastinsert_id = $order->id;
 
@@ -532,7 +582,7 @@ class PersonalController extends Controller
 
             $test = [
                 'invoice_no' => $invoice_no,
-                'sender_address'   => $pick_address,
+                'sender_address'   => $sender_address,
                 'receiver_address'   => $recp_address,
                 'earning'   =>  (float)$logistics_charge,
                 'sender_area'   => $sender_area_id,
@@ -554,7 +604,7 @@ class PersonalController extends Controller
             $data = array(
                     "invoice_no"=>$invoice_no,
                     "receiver_address"=>$recp_address,
-                    "sender_address"=>$pick_address,
+                    "sender_address"=>$sender_address,
                     "distance"=>$request->distance,
                     "qty"=>$item_qty,
                     "type"=>$item_type,

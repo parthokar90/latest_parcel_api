@@ -168,8 +168,8 @@ class PassportController extends Controller
         }
 
     }
-    
-    
+
+
     public function appSettings(){
         $delivery_configurations = DB::table('delivery_configurations')->get();
         $settings = DB::table('settings')->first();
@@ -310,8 +310,8 @@ class PassportController extends Controller
         }else{
             DB::table('users')->where('id', auth()->user()['id'])->update(['fcm_token_driver' => $request->fcm_token]);
         }
-        
-        
+
+
       $longitude =  $request->longitude;
       $latitude =  $request->latitude;
 
@@ -364,7 +364,7 @@ class PassportController extends Controller
                                     ->whereIn('orders.current_status',[1,2])
                                     ->where('pre_orders.pick_area_id',$id)
                                     ->count();
-            
+
             return [
                     'status' => 200,
                     'success' => true,
@@ -381,7 +381,7 @@ class PassportController extends Controller
         }
 
     }
-    
+
     public function pendingOrderList(Request $request){
         $area_order_list = DB::table('orders')
                                     ->join('pre_orders','pre_orders.invoice_no','=','orders.invoice_no')
@@ -391,13 +391,13 @@ class PassportController extends Controller
                                     ->where('pre_orders.pick_area_id',$request->area_id)
                                     ->orderBy('orders.id','desc')
                                     ->get();
-        
+
         return [
                     'status' => 200,
                     'success' => true,
                     'msg' => 'Data Found',
                     'data' => $area_order_list
-            ]; 
+            ];
     }
 
     public function preferedAreaListAdd(Request $request){
@@ -1034,7 +1034,7 @@ public function personalphoneNumberCheck(Request $request)
                 'phone' => $request->phone,
                 'password' => '123456789'
             ];
-    
+
     	    try {
                if (Auth::guard('api-personal')->attempt($credentials)) {
                    return auth()->user()->id;
@@ -1102,14 +1102,14 @@ public function personalphoneNumberCheck(Request $request)
                                     ->join('logistics_addional_infos','users.id','=','logistics_addional_infos.user_id')
                                     ->where('users.phone',$request->phone)
                                     ->first();
-      
+
         if($users_merchant_check != null){
 
         	$credentials = [
                 'phone' => $request->phone,
                 'password' => '123456789'
             ];
-            
+
     	    try {
                if (auth()->attempt($credentials)) {
                     $token = auth()->user()->createToken('TrutsForWeb')->accessToken;
@@ -1158,7 +1158,7 @@ public function personalphoneNumberCheck(Request $request)
 
     }
 
-   
+
 
 
 
@@ -1339,7 +1339,7 @@ public function personalphoneNumberCheck(Request $request)
             }else{
                 $tracking_info = null;
             }
-            
+
             if($tracking_info != null && count($tracking_info) > 0){
         	    $logistics_user_info = DB::table("users")
         	                                 ->join('logistics_addional_infos','users.id','=','logistics_addional_infos.user_id')
@@ -2032,7 +2032,7 @@ public function registerPersonal(Request $request)
         //         );
         //     }
         // }
-        
+
         // else {
         //     $users = DB::table('personal_infos')->insertGetId(
         //         ['username' => $username, 'password' => bcrypt('123456789'), 'phone' => $phone, 'status' => 1, 'role'=>7]
@@ -2446,7 +2446,7 @@ public function registerdelivery(Request $request)
     }
 
     public function SendSms($status,$phone,$invoice_no,$body){
-        
+
         /*
         $postdata = http_build_query(
             array(
@@ -2458,7 +2458,7 @@ public function registerdelivery(Request $request)
                 "message_body" => "ok"
             )
         );
-        
+
         $opts = array('http' =>
             array(
                 'method'  => 'POST',
@@ -2466,7 +2466,7 @@ public function registerdelivery(Request $request)
                 'content' => $postdata
             )
         );
-        
+
         $context  = stream_context_create($opts);
 
         $result = file_get_contents('https://portal.adnsms.com/api/v1/secure/send-sms', false, $context);
@@ -2485,15 +2485,15 @@ public function registerdelivery(Request $request)
         $query_string = http_build_query($params);
 
         $ch = curl_init($url);
-       
+
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $query_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      
+
         $result = curl_exec($ch);
-        
+
         curl_close($ch);
-        
+
     }
 
     public function SendOTPMessage(Request $request){
@@ -2502,7 +2502,7 @@ public function registerdelivery(Request $request)
         $otp = substr(rand(0,9999999999999),0,6);
         $body = "Your parcel magic verification code is ".$otp;
         $this->SendSms("",$number,"",$body);
-        
+
 	    return [
             'status' => 200,
             'success' => true,
@@ -2539,26 +2539,26 @@ public function registerdelivery(Request $request)
     	$delivery_users = DB::table('users')->where('id',auth()->user()['id'])->first();
         if($status == 3){
             $data = DB::table('orders')->where('invoice_no',$invoice_no)->first();
-            
+
             if($data->current_status == 2){
-                
+
                 if($company == null){
 
                     $otp = substr(rand(0,9999999999999),0,6);
                     $body = "Your parcel request has been accepted successfully. Invoice no #$invoice_no. Delivery agent ($delivery_users->username) is arriving at your location for pickup. Please share this code $otp with the delivery agent while dispatching.";
-    
+
                     $response = DB::table('orders')->where('invoice_no',$invoice_no)->update(array('active'=>1,'current_status'=>$status,'otp'=>$otp,'accepted_date'=>$Datebd));
-    
+
                     $title = "Your order is accepted. Invoice no:".$invoice_no;
                     $description = "Your parcel request has been accepted. Delivery agent ($delivery_users->username) is arriving at your location for pickup. Please share this code $otp with the delivery agent while dispatching.";
                 }else{
-    
+
                     $body = "Your parcel request has been accepted successfully. Invoice no #$invoice_no. Delivery agent ($delivery_users->username) is arriving at your location for pickup.";
                     $response = DB::table('orders')->where('invoice_no',$invoice_no)->update(array('current_status'=>$status,'accepted_date'=>$Datebd));
-    
+
                     $title = "Your order is accepted. Invoice no:".$invoice_no;
                     $description = "Your parcel request has been accepted. Delivery agent ($delivery_users->username) is arriving at your location for pickup.";
-    
+
                 }
                 DB::table('logistics_tracking')->insert(
                      array(
@@ -2569,21 +2569,21 @@ public function registerdelivery(Request $request)
                             'status' => 1
                      )
                 );
-                
-                
+
+
                $api_request_url = 'http://103.112.53.91:3000/accept';
                $invoice_no_array = ['invoice_no'=> $invoice_no];
                $ch_curl=curl_init($api_request_url);
                curl_setopt($ch_curl, CURLOPT_POST, true);
                curl_setopt($ch_curl, CURLOPT_POSTFIELDS,$invoice_no_array);
                curl_setopt($ch_curl, CURLOPT_FRESH_CONNECT, true);
-            
-               
+
+
                curl_exec($ch_curl);
                curl_close($ch_curl);
 
 
-            
+
 
                 $this->SendSms($status,$pre_data->pic_phone,$invoice_no,$body);
 
@@ -2594,7 +2594,7 @@ public function registerdelivery(Request $request)
                     'msg' => 'This order already accepted'
                 ];
             }
-           
+
 
         }
 
@@ -2691,26 +2691,26 @@ public function registerdelivery(Request $request)
                 ]);
         }
         if($status == 13){
-                
+
                 if($data->current_status == 2){
-                    
+
                     $response = DB::table('orders')->where('invoice_no',$invoice_no)->update(array('current_status'=>$status,'otp'=>null,'cancelled_date'=>$Datebd));
 
                     // Sender sms
                     $body = "Your parcel has been cancelled successfully. Invoice no #$invoice_no.";
                     $this->SendSms($status,$pre_data->pic_phone,$invoice_no,$body);
-    
+
                     $title = "Your order is cancelled. Invoice no:".$invoice_no;
                     $description = "Your parcel has been cancelled successfully";
                     // $this->pushNotificationSend($users->fcm_token_personal,$category,$title,$description,$url);
-    
+
                     DB::table('system_status_logs')->insert([
                         "invoice_id" => $invoice_no,
                         "status" => 13
-    
+
                     ]);
-                        
-        
+
+
                 }else{
                     return [
                             'status' => 200,
@@ -2718,12 +2718,12 @@ public function registerdelivery(Request $request)
                             'msg' => 'You can not cancel this order, because its already under process'
                         ];
                 }
-                
-                
+
+
         }
 
 
-    // 	$response = DB::table('orders')->where('invoice_no',$invoice_no)->update(array('current_status'=>$status));
+        // 	$response = DB::table('orders')->where('invoice_no',$invoice_no)->update(array('current_status'=>$status));
 
 
 
@@ -3240,7 +3240,7 @@ public function registerdelivery(Request $request)
                 $final_order[] = $final_order1;
             }
         }
-        
+
         foreach($final_order as $all_order){
 
             $order_details = json_decode($all_order->order_additional_details, true);
@@ -3304,9 +3304,9 @@ public function registerdelivery(Request $request)
         //dd($company->company_id);
         if($company->company_id != null){
             $company_id = $company->company_id;
-    
+
             $company_array = json_decode($company_id);
-         
+
             $final_order = DB::table('pre_orders')
                         ->join('order_distance', 'pre_orders.invoice_no', '=', 'order_distance.invoice_no')
                         ->join('item_types', 'item_types.id', '=', 'pre_orders.item_type')
@@ -3315,9 +3315,9 @@ public function registerdelivery(Request $request)
                         ->whereIn('orders.company_id', $company_array)
                         ->get();
             if(!$final_order->isEmpty()){
-    
+
             foreach($final_order as $all_order){
-    
+
                 $order_details = json_decode($all_order->order_additional_details, true);
                 if($order_details){
                     foreach($order_details as $key =>$item)
@@ -3326,7 +3326,7 @@ public function registerdelivery(Request $request)
                         $param_name[] = $key;
                     }
                 }
-    
+
                 $information1['recp_address'] = $all_order->recp_address;
                 $information1['pick_address'] = $all_order->pick_address;
                 $information1['item_type'] = $all_order->item_type;
@@ -3339,9 +3339,9 @@ public function registerdelivery(Request $request)
                 $information1['personal_order_type'] = $all_order->personal_order_type;
                 $information1['additional_info'] = $all_order->order_additional_details;
                 $information1['prefered_area'] = 0;
-    
+
                 $information[] = $information1;
-    
+
             }
             // return $information1;
             return [
@@ -3350,7 +3350,7 @@ public function registerdelivery(Request $request)
                 'msg' => 'Order Found',
                 'data'=> $information
             ];
-    
+
             }else{
                 return [
                 'status' => 200,
@@ -3604,10 +3604,10 @@ public function registerdelivery(Request $request)
                 }
             }
 
-            
+
             if(isset($final_order)){
                 foreach($final_order as $all_order){
-    
+
                     $order_details = json_decode($all_order->order_additional_details, true);
                     if($order_details){
                         foreach($order_details as $key =>$item)
@@ -3616,7 +3616,7 @@ public function registerdelivery(Request $request)
                             $param_name[] = $key;
                         }
                     }
-    
+
                     $information1['recp_address'] = $all_order->recp_address;
                     $information1['pick_address'] = $all_order->pick_address;
                     $information1['item_type'] = $all_order->item_type;
@@ -3630,17 +3630,17 @@ public function registerdelivery(Request $request)
                     $information1['additional_info'] = $all_order->order_additional_details;
                     // $information1['sender order'] = $all_order->pick_area_id;
                     // $information1['recp order'] = $all_order->recp_area;
-    
+
                     if(in_array($all_order->invoice_no, $pick_to_recp_invoice, true) == true){
                         $information1['prefered_area'] = 1;
                     }else{
                         $information1['prefered_area'] = null;
                     }
-    
+
                     $information[] = $information1;
-    
+
                 }
-    
+
                 return [
                     'status' => 200,
                     'success' => true,
@@ -3668,7 +3668,7 @@ public function registerdelivery(Request $request)
     }
 
 
-        public function preferedAreaSingleSearchOrderList(Request $request){
+    public function preferedAreaSingleSearchOrderList(Request $request){
 
         $validator = Validator::make($request->all(), [
             'to' => 'required|numeric|digits_between: 1,5',
@@ -3893,7 +3893,7 @@ public function registerdelivery(Request $request)
             if(isset($final_order)){
 
                 foreach($final_order as $all_order){
-    
+
                     $order_details = json_decode($all_order->order_additional_details, true);
                     if($order_details){
                         foreach($order_details as $key =>$item)
@@ -3902,7 +3902,7 @@ public function registerdelivery(Request $request)
                             $param_name[] = $key;
                         }
                     }
-    
+
                     $information1['recp_address'] = $all_order->recp_address;
                     $information1['pick_address'] = $all_order->pick_address;
                     $information1['item_type'] = $all_order->item_type;
@@ -3916,7 +3916,7 @@ public function registerdelivery(Request $request)
                     $information1['additional_info'] = $all_order->order_additional_details;
                     // $information1['sender order'] = $all_order->pick_area_id;
                     // $information1['recp order'] = $all_order->recp_area;
-    
+
                     if(in_array($all_order->invoice_no, $pick_to_recp_invoice, true) == true){
                         $information1['prefered_area'] = 1;
                     }elseif(in_array($all_order->invoice_no, $others_to_recp_invoice, true) == true){
@@ -3924,11 +3924,11 @@ public function registerdelivery(Request $request)
                     }else{
                         $information1['prefered_area'] = null;
                     }
-    
+
                     $information[] = $information1;
-    
+
                 }
-    
+
                 return [
                     'status' => 200,
                     'success' => true,
@@ -4162,7 +4162,7 @@ public function registerdelivery(Request $request)
                 $sender_area_id = $prefered_area_ranges->id;
             }
         }
-        
+
         $user_id = Auth::id();
         $recp_name = strip_tags($request->recp_name);
         $invoice_no = $request->invoice_no;
@@ -4412,8 +4412,8 @@ public function registerdelivery(Request $request)
             $firebase->set("Parcelmagic" . '/' . $invoice_no,$test);
 
             $data = array(
-                    "invoice_no"=>$invoice_no, 
-                    "receiver_address"=>$recp_address, 
+                    "invoice_no"=>$invoice_no,
+                    "receiver_address"=>$recp_address,
                     "sender_address"=>$pick_address,
                     "distance"=>$request->distance,
                     "qty"=>$item_qty,
@@ -4422,16 +4422,16 @@ public function registerdelivery(Request $request)
                     'area_id' => $sender_area_id
                 );
 
-           
+
 
            $api_request_url = 'http://103.112.53.91:3000/set-parcel';
-      
+
            $ch_curl=curl_init($api_request_url);
            curl_setopt($ch_curl, CURLOPT_POST, true);
            curl_setopt($ch_curl, CURLOPT_POSTFIELDS,$data);
            curl_setopt($ch_curl, CURLOPT_FRESH_CONNECT, true);
-        
-           
+
+
            curl_exec($ch_curl);
            curl_close($ch_curl);
 
@@ -4759,7 +4759,7 @@ public function registerdelivery(Request $request)
 
     public function checkCoupons(Request $request){
         $coupons = DB::table('coupons')->select('coupon_text','discount_amount','id')->where('coupon_text',$request->coupon_text)->where('published' , 1)->where('expired_on','>',date("Y/m/d"))->first();
-        
+
         if($coupons){
             return [
                     'status' => 200,
@@ -4772,7 +4772,7 @@ public function registerdelivery(Request $request)
                     'status' => 200,
                     'success' => false,
                     'msg' => 'No coupon found'
-                    
+
             ];
         }
 
@@ -4788,20 +4788,20 @@ public function registerdelivery(Request $request)
 
         if($coupons){
             return [
-                
+
                     'status' => 200,
                     'success' => true,
                     'msg' => 'Coupon found',
                     'data' => $coupons
-                    
+
             ];
         }else{
             return [
-                    
+
                     'status' => 200,
                     'success' => true,
                     'msg' => 'No active Coupons found',
-                    
+
             ];
         }
 
@@ -4850,14 +4850,14 @@ public function registerdelivery(Request $request)
     public function couponImage(){
 
         $image = DB::table('coupon_images')->where('status',1)->get();
-    
+
         if(count($image) != 0){
            return [
                 'status' => 200,
                 'success' => true,
                 'msg' => 'Data found',
                 'data' => $image
-            ]; 
+            ];
         }else{
             return [
                 'status' => 200,
@@ -4866,38 +4866,38 @@ public function registerdelivery(Request $request)
                 'data' => []
             ];
         }
-        
+
     }
 
-    
-    
+
+
 
     public function driverProfile(){
-        
+
         $user_id = auth()->user()['id'];
 
         $users = DB::table('users')->where("id" , $user_id)->first();
         $user_address = DB::table('logistics_addional_infos')->select('address')->where("user_id" , $users->id)->first()->address;
-        
+
         $invoice_no = DB::table('logistics_tracking')->select('invoice_no')->where("logistics_id" ,$user_id)->get();
-        
+
         $invoice_no_arr = [];
         foreach($invoice_no as $invoice){
             $invoice_no_arr[] = $invoice->invoice_no;
         }
-        
+
         if(isset($users->id)){
-            
-            $ratings = DB::table('ratings')->where('user_id',$user_id)->avg('points'); 
-            $pending_delivery = DB::table('orders')->whereIn('current_status',[2, 3, 4])->whereIn('invoice_no',$invoice_no_arr)->count(); 
-            $completed_delivery = DB::table('orders')->where('current_status',5)->whereIn('invoice_no',$invoice_no_arr)->count(); 
+
+            $ratings = DB::table('ratings')->where('user_id',$user_id)->avg('points');
+            $pending_delivery = DB::table('orders')->whereIn('current_status',[2, 3, 4])->whereIn('invoice_no',$invoice_no_arr)->count();
+            $completed_delivery = DB::table('orders')->where('current_status',5)->whereIn('invoice_no',$invoice_no_arr)->count();
             return [
                     'status' => 200,
                     'success' => true,
                     'msg' => 'Data found',
                     'data' => ['id'=>$users->id,'name'=>$users->username,'address'=>$user_address,'phone'=>$users->phone,'rating'=>$ratings,'pending_delivery'=>$pending_delivery,'completed_delivery'=>$completed_delivery]
             ];
-            
+
         }else{
             return [
                     'status' => 200,
@@ -4906,9 +4906,9 @@ public function registerdelivery(Request $request)
                     'data' => []
             ];
         }
-        
-        
-        
+
+
+
     }
 
 

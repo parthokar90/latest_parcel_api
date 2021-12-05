@@ -211,6 +211,11 @@ class DriverLoginController extends Controller
             $user->verified=0;
             $user->save();
 
+            $client_id = $user->id."".date('Y')."". "01" ."_". mt_rand(10000, 99999);
+            Driver::where('id',$user->id)->update([
+               'client_id'=> $client_id
+            ]);
+
         }
         $credentials = [
             'phone' => $request->phone,
