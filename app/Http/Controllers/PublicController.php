@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -16,6 +17,19 @@ class PublicController extends Controller
         $body = "Your parcel magic verification code is ".$otp;
         $this->SendSms("",$number,"",$body);
 
+        // $checkNumber = DB::table('otp_verification_logs')->where('phone',$number)->first();
+
+        // $attempts = DB::table('otp_verification_logs')->where('attempts', 1); // get attempts, default: 0
+        // dd($attempts);
+        // $attemptsCount = DB::table('otp_verification_logs')->where('attempts', $attempts + 1); // increase attempts
+        // dd($attempts);
+
+        // if ($checkNumber==null) {
+        //     $sendOTP = DB::table('otp_verification_logs')->insert(['otp_code' => $otp,'phone' => $number]);
+        // } else {
+        //     $sendOTP = DB::table('otp_verification_logs')->update(['otp_code' => $otp]);
+        // }
+
 	    return [
             'status' => 200,
             'success' => true,
@@ -25,7 +39,7 @@ class PublicController extends Controller
 
     }
     public function SendSms($status,$phone,$invoice_no,$body){
-        
+
         $url = 'https://portal.adnsms.com/api/v1/secure/send-sms';
 
         $params = array(
