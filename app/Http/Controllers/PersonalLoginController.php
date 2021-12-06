@@ -71,16 +71,39 @@ class PersonalLoginController extends Controller
             ];
         }
 
-        $users_app_check = Personal::
-                            where('phone',$request->phone)
-                            ->first();
-
+        $users_app_check = Personal::where('phone',$request->phone)
+                                    ->select('phone','id','username','client_id','email','image')
+                                    ->first();
+                                    // dd($users_app_check);
 
         if($users_app_check != null){
 
+            // $otp = substr(rand(0,9999999999999),0,6);
+            // $phone = $request->phone;
+
+            // $otpcheck = Personal::where('phone',$phone)->where('otp_code',$otp)->first();
+            // if ($otpcheck==null) {
+            //     $response = Personal::where('phone',$phone)->update(array('active'=>1,'otp'=>$otp));
+            // } else {
+            //     return [
+            //         'status' => 200,
+            //         'success' => true,
+            //         'msg' => 'Please enter correct OTP',
+            //     ];
+            // }
+
+            // dd($otpcheck);
+
+            // $request->validate([
+            //     'phone' => 'required',
+            //     'password' => 'required',
+            //     'otp_code' => 'required',
+            // ]);
+
         	$credentials = [
                 'phone' => $request->phone,
-                'password' => '123456789'
+                'password' => '123456789',
+                // 'otp_code' => $otp
             ];
 
     	    try {
@@ -101,6 +124,7 @@ class PersonalLoginController extends Controller
                         return [
                             'status' => 200,
                             'success' => true,
+                            'is_register' => true,
                             'msg' => 'User registered',
                             'user' => $users,
                             'data' => ['token_type' => 'Bearer','token' => $token]
@@ -126,15 +150,12 @@ class PersonalLoginController extends Controller
     	    return [
                     'status' => 200,
                     'success' => true,
+                    'is_register' =>false,
                     'msg' => 'User not registered'
             ];
     	}
 
     }
-
-
-
-
 
     //registration
     public function registerPersonal(Request $request)
@@ -257,8 +278,5 @@ class PersonalLoginController extends Controller
 
 
     }
-
-
-
 
 }

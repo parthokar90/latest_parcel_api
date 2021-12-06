@@ -19,12 +19,20 @@ class DriverMiddleware
     {
         $acceptHeader = $request->header('Authorization');
 
+        if($acceptHeader==null){
+            return response()->json([], 400);
+        }
+
         $check_token=DB::table('driver_infos')->where('auth_access_token',$acceptHeader)->first();
 
         if($check_token==null){
             return response()->json([], 400);
         }
 
-        return $next($request);
+        if($check_token->auth_access_token==$acceptHeader){
+            return $next($request);
+        }else{
+            return response()->json([], 400);
+        }
     }
 }
