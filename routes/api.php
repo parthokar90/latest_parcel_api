@@ -12,6 +12,7 @@ use App\Http\Controllers\PublicController;
 
 //public api route
 Route::post('send-otp-message', [PublicController::class,'SendOTPMessage']);
+Route::post('otp-verification', [PublicController::class,'otpVerification']);
 
 Route::get('test-fireabse', [PassportController::class,'testFireabse']);
 Route::get('driver-lat-long/{userid}/{lat}/{long}', [PassportController::class,'driverLog']);
